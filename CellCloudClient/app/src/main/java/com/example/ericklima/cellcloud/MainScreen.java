@@ -15,17 +15,16 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.concurrent.TimeoutException;
 
 public class MainScreen extends AppCompatActivity {
 
     private boolean connected = false;
 
-    private String host = "10.0.2.2";
-    private int port = 3000;
+    public static final String host = "10.0.2.2";
+    public static final int port = 3000;
+    public static final int timeout = 3000;
 
-    private Socket socket = new Socket();
-    private ServerConnector serverConnector = new ServerConnector(socket, host, port);
+    Socket socket = null;
     Listener listener = null;
 
     private ProgressDialog progress;
@@ -39,21 +38,22 @@ public class MainScreen extends AppCompatActivity {
         btn = (Button) findViewById(R.id.main_btn);
 
         progress = new ProgressDialog(this);
-        progress.setMessage("Trying to connect to server...");
+        progress.setMessage("Trying to connect to server on port " + port + "...");
         progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
     }
 
     public void onClick(View v) {
-        if (!connected) {
-            try {
-                serverConnector.execute();
-            } catch (Exception e) {
-                e.printStackTrace();
+        try {
+            if (!connected)
+                new ServerConnector(host, port).execute();
+            else {
+                listener.cancel(true);
+                connected = false;
+                btn.setText("Connect");
+                socket.close();
             }
-        } else {
-            listener.cancel(true);
-            connected = false;
-            btn.setText("Connect");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -61,10 +61,9 @@ public class MainScreen extends AppCompatActivity {
 
         private String host;
         private int port;
-        private Socket socket;
 
-        public ServerConnector(Socket socket, String host, int port) {
-            this.socket = socket;
+        ServerConnector(String host, int port) {
+            socket = new Socket();
             this.host = host;
             this.port = port;
         }
@@ -77,7 +76,6 @@ public class MainScreen extends AppCompatActivity {
 
         @Override
         protected Socket doInBackground(Void[] objects) {
-            int timeout = 3000;
             try {
                 socket.connect(new InetSocketAddress(host, port), timeout);
             } catch (IOException e) {
@@ -112,7 +110,7 @@ public class MainScreen extends AppCompatActivity {
         private PrintWriter out = null;
         private BufferedReader in = null;
 
-        public Listener(BufferedReader in, PrintWriter out) {
+        Listener(BufferedReader in, PrintWriter out) {
             this.in = in;
             this.out = out;
         }
