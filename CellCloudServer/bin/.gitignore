@@ -2,3 +2,5 @@
 /Server$ConnectionsListener.class
 /Server$Listener.class
 /Server.class
+/Algorithm.class
+/Server$DisconnectionChecker.class

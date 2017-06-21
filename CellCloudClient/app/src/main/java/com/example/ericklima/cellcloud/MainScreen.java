@@ -20,7 +20,7 @@ public class MainScreen extends AppCompatActivity {
 
     private boolean connected = false;
 
-    public static final String host = "10.0.2.2";
+    public static final String host = "192.168.0.100";
     public static final int port = 3000;
     public static final int timeout = 3000;
 
@@ -118,15 +118,25 @@ public class MainScreen extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void[] objects) {
             try {
-                String line = null;
+                String line;
 
                 while((line = in.readLine()) != null) {
-                    // Do something. Never gets here
+                    processAndSendResult(line, out);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
         }
+    }
+
+    public void processAndSendResult(String toProcess, PrintWriter out) {
+        String[] split = toProcess.split(",");
+        out.println(reduce(split[0], split[1]));
+    }
+
+    public String reduce(String s1, String s2) {
+        Integer i1 = Integer.valueOf(s1), i2 = Integer.valueOf(s2);
+        return (i1 < i2)? i1.toString() : i2.toString();
     }
 }

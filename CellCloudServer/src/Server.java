@@ -1,12 +1,9 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.Vector;
 
 import javax.net.ServerSocketFactory;
 
@@ -14,18 +11,20 @@ public class Server {
 	
 	public static void main(String[] args) {
 		try {
-			ArrayList<Socket> socketList = new ArrayList<>();
+			Vector<Socket> socketList = new Vector<>();
 			
 			int port = 3000;
 			ServerSocket serverSocket = ServerSocketFactory.getDefault().createServerSocket(port);
 			
 			System.out.println("Server running on PORT: " + port);
-						
-			Thread t = new Thread(new ConnectionsListener(serverSocket, socketList));
-			t.start();
 			
-			Thread algorithm = new Thread(new Algoritmh(socketList));
-			algorithm.start();
+			Algorithm algorithm = new Algorithm(socketList);
+						
+			Thread addConnections = new Thread(new ConnectionsListener(serverSocket, socketList, algorithm));
+			addConnections.start();
+			
+			Thread algorithmThread = new Thread(algorithm);
+			algorithmThread.start();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -35,24 +34,25 @@ public class Server {
 	static private class ConnectionsListener implements Runnable {
 		
 		ServerSocket serverSocket;
-		ArrayList<Socket> socketList;
+		Vector<Socket> sockets;
+		Algorithm algorithm;
 		
-		public ConnectionsListener(ServerSocket serverSocket, ArrayList<Socket> socketList) {
+		public ConnectionsListener(ServerSocket serverSocket, Vector<Socket> socketList, Algorithm algoritmh) {
 			this.serverSocket = serverSocket;
-			this.socketList = socketList;
+			this.sockets = socketList;
+			this.algorithm = algoritmh;
 		}
 
 		@Override
 		public void run() {
 			try {
 				while(true) {
-					System.out.println("Waiting for connections...");
 					Socket newSocket = serverSocket.accept();
-					synchronized (this) {
+					synchronized (sockets) {
 						System.out.println("Cellphone connected!");
-						socketList.add(newSocket);
-						notifyAll();
-						Thread t = new Thread(new Listener(newSocket));
+						sockets.add(newSocket);
+						sockets.notifyAll();
+						Thread t = new Thread(new Listener(newSocket, sockets, algorithm));
 						t.start();
 					}
 				}
@@ -66,28 +66,34 @@ public class Server {
 	static private class Listener implements Runnable {
 		
 		Socket socket;
+		Vector<Socket> sockets;
+		Algorithm algorithm;
 		
-		public Listener(Socket socket) {
+		public Listener(Socket socket, Vector<Socket> sockets, Algorithm algorithm) {
 			this.socket = socket;
+			this.sockets = sockets;
+			this.algorithm = algorithm;
 		}
 
 		@Override
 		public void run() {
 			try {
-				PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				
 				String line = null;
 
                 while((line = in.readLine()) != null) {
-                    // Do something. Never gets here
+                    algorithm.receiveResult(line);
                 }
+                
+                sockets.remove(socket);
+                System.out.println(socket + " disconnected!");
 				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 	
 }
