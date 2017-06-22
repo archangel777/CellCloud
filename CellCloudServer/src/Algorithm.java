@@ -7,55 +7,86 @@ import java.util.Vector;
 public class Algorithm implements Runnable {
 	
 	Vector<Socket> sockets;
-	DataPool pool;
+	DataPool currentPool;
+	DataPool fixedPool;
 	int pos = 0;
-	final Float cellProb = 0.002f;
+	final Float cellProb = 0.2f;
+	final int batchSize = 100;
+	final int nTests = 1000;
 	
 	public Algorithm(Vector<Socket> sockets) {
 		this.sockets = sockets;
+		fixedPool = new DataPool(10000);
 	}
 
 	@Override
 	public void run() {
-		pool = new DataPool(5000000);
-		System.out.println("Running....");
-		long startTime = System.currentTimeMillis();
-		while(pool.size() > 1)
-			synchronized (pool) {
-				String s1 = pool.poll().toString();
-				String s2 = pool.poll().toString();
-				sendProcessing(s1, s2);
-			}
 		
-		System.out.println("Calculated minimum: " + pool.poll());
-		System.out.println("Finished in " + (System.currentTimeMillis() - startTime) + " ms.");
+		
+		long totalTime = 0;
+		System.out.println("Running....");
+		for (int i = 0; i < nTests; i++) {
+			currentPool = fixedPool.copy();
+			if (i%(nTests/10) == 0) System.out.print("#");
+			long startTime = System.currentTimeMillis();
+			process();
+			totalTime += System.currentTimeMillis() - startTime;
+		}
+		System.out.println("\nFinished in an average of " + (totalTime/(double)nTests) + " ms.");
+	}
+	
+	public void process() {
+		while(currentPool.size() > 1)
+			synchronized (currentPool) {
+				String s = "";
+				for (int i = 0; i < batchSize && currentPool.size() > 1; i++) {
+					s += currentPool.poll().toString() + ",";
+					s += currentPool.poll().toString() + ";";
+				}
+				sendProcessing(s);
+			}
 	}
 	
 	public void receiveResult(String res) {
-		pool.insert(Long.valueOf(res));
+		String[] splt = res.split(";");
+		for (int i = 0; i < splt.length-1; i++)
+			currentPool.insert(Long.valueOf(splt[i]));
 	}
 	
-	public void sendProcessing(String s1, String s2) {
+	public void sendProcessing(String s) {
 		try {
+			double cellProb = Math.pow(0.2, 1./sockets.size());
 			Random r = new Random();
-			if (!sockets.isEmpty() && r.nextFloat() < cellProb) {
-				PrintWriter writer = new PrintWriter(sockets.get(pos).getOutputStream());
-				writer.println(s1+","+s2);
-				pos++;
+			if (r.nextFloat() < cellProb) {
 				if (pos >= sockets.size()) pos = 0;
+				PrintWriter writer = new PrintWriter(sockets.get(pos).getOutputStream());
+				writer.println(s);
+				pos++;
 			}
 			else {
-				receiveResult(reduce(s1, s2));
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						receiveResult(reduce(s));						
+					}
+				}).start();
 			}
-			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public String reduce(String s1, String s2) {
-		Long i1 = Long.valueOf(s1), i2 = Long.valueOf(s2);
-		return (i1 < i2)? i1.toString() : i2.toString();
+	public String reduce(String s) {
+		String res = "";
+		String[] sl = s.split(";");
+		for (int i = 0; i < sl.length-1; i++) {
+			String[] values = sl[i].split(",");
+			if (Long.valueOf(values[0]) < Long.valueOf(values[1]))
+				res += values[0] + ";";
+			else
+				res += values[1] + ";";
+		}
+		return res;
 	}
 	
 }
