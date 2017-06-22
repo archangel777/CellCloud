@@ -20,7 +20,7 @@ public class MainScreen extends AppCompatActivity {
 
     private boolean connected = false;
 
-    public static final String host = "192.168.0.100";
+    public static final String host = "192.168.0.103";
     public static final int port = 3000;
     public static final int timeout = 3000;
 

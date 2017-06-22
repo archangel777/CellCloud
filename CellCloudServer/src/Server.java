@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.Vector;
 
 import javax.net.ServerSocketFactory;
@@ -20,12 +21,22 @@ public class Server {
 			
 			Algorithm algorithm = new Algorithm(socketList);
 						
-			Thread addConnections = new Thread(new ConnectionsListener(serverSocket, socketList, algorithm));
+			ConnectionsListener listener = new ConnectionsListener(serverSocket, socketList, algorithm);
+			Thread addConnections = new Thread(listener);
 			addConnections.start();
 			
 			Thread algorithmThread = new Thread(algorithm);
-			algorithmThread.start();
 			
+			Scanner scanner = new Scanner(System.in);
+			String line;
+			while(!(line = scanner.nextLine()).equals("exit")) {
+				if (line.equals("run"))
+					algorithmThread.run();
+			}
+			scanner.close();
+			
+			listener.stop();
+			serverSocket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -36,6 +47,7 @@ public class Server {
 		ServerSocket serverSocket;
 		Vector<Socket> sockets;
 		Algorithm algorithm;
+		boolean stopped = false;
 		
 		public ConnectionsListener(ServerSocket serverSocket, Vector<Socket> socketList, Algorithm algoritmh) {
 			this.serverSocket = serverSocket;
@@ -46,7 +58,7 @@ public class Server {
 		@Override
 		public void run() {
 			try {
-				while(true) {
+				while(!stopped) {
 					Socket newSocket = serverSocket.accept();
 					synchronized (sockets) {
 						System.out.println("Cellphone connected!");
@@ -57,9 +69,13 @@ public class Server {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.out.println("Cancelled connections.");
 			}
 			
+		}
+		
+		public void stop() {
+			stopped = true;
 		}
 	}
 	
