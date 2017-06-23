@@ -7,20 +7,27 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainScreen extends AppCompatActivity {
 
     private boolean connected = false;
 
-    public static final String host = "192.168.0.103";
+    public static final String host = "192.168.0.105";
     public static final int port = 3000;
     public static final int timeout = 3000;
 
@@ -131,12 +138,18 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void processAndSendResult(String toProcess, PrintWriter out) {
-        String[] split = toProcess.split(",");
-        out.println(reduce(split[0], split[1]));
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Tuple<Long>>>(){}.getType();
+        ArrayList<Tuple<Long>> list = gson.fromJson(toProcess, type);
+
+        Long result = reduce(list);
+        out.println(gson.toJson(result));
     }
 
-    public String reduce(String s1, String s2) {
-        Integer i1 = Integer.valueOf(s1), i2 = Integer.valueOf(s2);
-        return (i1 < i2)? i1.toString() : i2.toString();
+    public Long reduce(ArrayList<Tuple<Long>> t) {
+        if (t.size() == 1) return Math.min(t.get(0).getT1(), t.get(0).getT2());
+        Tuple<Long> t1 = t.remove(0), t2 = t.remove(0);
+        t.add(new Tuple<>(Math.min(t1.getT1(), t1.getT2()), Math.min(t2.getT1(), t2.getT2())));
+        return reduce(t);
     }
 }

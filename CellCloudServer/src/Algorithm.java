@@ -1,8 +1,11 @@
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
+
+import com.google.gson.Gson;
 
 public class Algorithm implements Runnable {
 	
@@ -36,38 +39,34 @@ public class Algorithm implements Runnable {
 	}
 	
 	public void process() {
-		while(currentPool.size() > 1)
-			synchronized (currentPool) {
-				String s = "";
-				for (int i = 0; i < batchSize && currentPool.size() > 1; i++) {
-					s += currentPool.poll().toString() + ",";
-					s += currentPool.poll().toString() + ";";
-				}
-				sendProcessing(s);
+		while(currentPool.size() > 1) {
+			ArrayList<Tuple<Long>> list = new ArrayList<>();
+			for (int i = 0; i < batchSize && currentPool.size() > 1; i++) {
+				list.add(new Tuple<>(currentPool.poll(), currentPool.poll()));
 			}
+			sendProcessing(list);
+		}
 	}
 	
-	public void receiveResult(String res) {
-		String[] splt = res.split(";");
-		for (int i = 0; i < splt.length-1; i++)
-			currentPool.insert(Long.valueOf(splt[i]));
+	public void receiveResult(Long res) {
+		currentPool.insert(res);
 	}
 	
-	public void sendProcessing(String s) {
+	public void sendProcessing(ArrayList<Tuple<Long>> t) {
 		try {
-			double cellProb = Math.pow(0.2, 1./sockets.size());
+			double cellProb = (sockets.isEmpty())? 0 : Math.pow(0.8, 1./sockets.size());
 			Random r = new Random();
 			if (r.nextFloat() < cellProb) {
 				if (pos >= sockets.size()) pos = 0;
 				PrintWriter writer = new PrintWriter(sockets.get(pos).getOutputStream());
-				writer.println(s);
+				writer.println(new Gson().toJson(t));
 				pos++;
 			}
 			else {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						receiveResult(reduce(s));						
+						receiveResult(reduce(t));						
 					}
 				}).start();
 			}
@@ -76,17 +75,11 @@ public class Algorithm implements Runnable {
 		}
 	}
 	
-	public String reduce(String s) {
-		String res = "";
-		String[] sl = s.split(";");
-		for (int i = 0; i < sl.length-1; i++) {
-			String[] values = sl[i].split(",");
-			if (Long.valueOf(values[0]) < Long.valueOf(values[1]))
-				res += values[0] + ";";
-			else
-				res += values[1] + ";";
-		}
-		return res;
-	}
+	public Long reduce(ArrayList<Tuple<Long>> t) {
+        if (t.size() == 1) return Math.min(t.get(0).getT1(), t.get(0).getT2());
+        Tuple<Long> t1 = t.remove(0), t2 = t.remove(0);
+        t.add(new Tuple<>(Math.min(t1.getT1(), t1.getT2()), Math.min(t2.getT1(), t2.getT2())));
+        return reduce(t);
+    }
 	
 }

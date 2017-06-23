@@ -8,8 +8,10 @@ import java.util.Vector;
 
 import javax.net.ServerSocketFactory;
 
+import com.google.gson.Gson;
+
 public class Server {
-	
+		
 	public static void main(String[] args) {
 		try {
 			Vector<Socket> socketList = new Vector<>();
@@ -99,7 +101,7 @@ public class Server {
 				String line = null;
 
                 while((line = in.readLine()) != null) {
-                    algorithm.receiveResult(line);
+                    algorithm.receiveResult(new Gson().fromJson(line, Long.class));
                 }
                 
                 sockets.remove(socket);
