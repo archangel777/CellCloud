@@ -42,6 +42,7 @@ public class MainScreen extends AppCompatActivity {
     public static final int timeout = 3000;
 
     private SharedPreferences mPreferences;
+    Handler handler = new Handler();
 
     Socket socket = null;
     Listener listener = null;
@@ -52,13 +53,12 @@ public class MainScreen extends AppCompatActivity {
     private EditText mIP0, mIP1, mIP2, mIP3, mPort;
 
     TextChanger textChangerListener = new TextChanger();
+    StopWatch watch = new StopWatch();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
-
-
 
         mIP0 = (EditText) findViewById(R.id.ip0);
         mIP1 = (EditText) findViewById(R.id.ip1);
@@ -176,6 +176,7 @@ public class MainScreen extends AppCompatActivity {
             super.onPostExecute(socket);
             progress.dismiss();
             if (socket.isConnected()) {
+                watch.reset();
                 textView.setText("");
                 try {
                     PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
@@ -220,6 +221,7 @@ public class MainScreen extends AppCompatActivity {
     }
 
     public void processAndSendResult(String toProcess, PrintWriter out) {
+
         Gson gson = new Gson();
         DataPacket pkt = gson.fromJson(toProcess, DataPacket.class);
         ReduceStrategy strategy;
@@ -233,10 +235,17 @@ public class MainScreen extends AppCompatActivity {
                 strategy = new SumReduceStrategy();
                 break;
         }
+        watch.start();
         Long result = strategy.reduce(pkt.getData());
+        watch.stop();
         //Log.d("result", result.toString());
         out.println(gson.toJson(result));
         out.flush();
+        handler.post(new Runnable() {
+            public void run() {
+                textView.setText("Avg: " + watch.getAvgTime());
+            }
+        });
     }
 
 }

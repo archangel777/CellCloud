@@ -1,4 +1,4 @@
-package utils;
+package com.example.ericklima.cellcloud;
 
 public class StopWatch {
 	

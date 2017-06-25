@@ -19,12 +19,14 @@ public class Algorithm implements Runnable {
 	DataPool currentPool;
 	DataPool fixedPool;
 	int pos = 0;
-	final Float minCellProb = 0.05f;
-	final Float maxCellProb = 0.5f;
+	final Float minCellProb = 0.00f;
+	final Float maxCellProb = 0.1f;
 	final int batchSize = 1000;
 	final int nTests = 1000;
 	private int sent = 0;
+	private boolean sendToCell;
 	private ReduceStrategy strategy;
+	private StopWatch testWatch = new StopWatch();
 		
 	public Algorithm(Vector<Socket> sockets) {
 		String strat = "sum";
@@ -46,10 +48,12 @@ public class Algorithm implements Runnable {
 
 	@Override
 	public void run() {
+		testWatch.reset();
 		StopWatch watch = new StopWatch();
 		System.out.println("Running....");
 		for (int i = 0; i < nTests; i++) {
 			currentPool = fixedPool.copy();
+			sendToCell = true;
 			if (i%(nTests/10) == 0) System.out.print("#");
 			
 			watch.start();
@@ -59,6 +63,7 @@ public class Algorithm implements Runnable {
 		System.out.println("\nFinished in an average of " + watch.getAvgTime() + " ms.");
 		System.out.println("Last result was: " + currentPool.peek());
 		System.out.println("Baseline value is: " + strategy.baseline(fixedPool));
+		System.out.println("Avg ms: " + testWatch.getAvgTime());
 	}
 	
 	public void process(){
@@ -93,7 +98,7 @@ public class Algorithm implements Runnable {
 		sent++;
 		double cellProb = (sockets.isEmpty())? 0 : Math.pow(0.4, 1./sockets.size())*(maxCellProb - minCellProb) + minCellProb;
 		Random r = new Random();
-		if (r.nextFloat() < cellProb && t.size() == batchSize) {
+		if (r.nextFloat() < cellProb) {
 			if (pos >= sockets.size()) pos = 0;
 			PrintWriter writer = new PrintWriter(sockets.get(pos).getOutputStream());
 			writer.println(new Gson().toJson(new DataPacket(strategy.strategyName(), t)));
@@ -101,12 +106,17 @@ public class Algorithm implements Runnable {
 			pos++;
 		}
 		else {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					receiveResult(strategy.reduce(t));						
-				}
-			}).start();
+			testWatch.start();
+			receiveResult(strategy.reduce(t));	
+			testWatch.stop();
+//			new Thread(new Runnable() {
+//				@Override
+//				public void run() {
+//					testWatch.start();
+//					receiveResult(strategy.reduce(t));	
+//					testWatch.stop();
+//				}
+//			}).start();
 		}
 	}
 	
