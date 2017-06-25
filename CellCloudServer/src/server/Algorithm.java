@@ -19,7 +19,8 @@ public class Algorithm implements Runnable {
 	DataPool currentPool;
 	DataPool fixedPool;
 	int pos = 0;
-	final Float cellProb = 0.01f;
+	final Float minCellProb = 0.05f;
+	final Float maxCellProb = 0.5f;
 	final int batchSize = 1000;
 	final int nTests = 1000;
 	private int sent = 0;
@@ -90,9 +91,9 @@ public class Algorithm implements Runnable {
 	
 	public void sendProcessing(ArrayList<Tuple<Long>> t) throws IOException {
 		sent++;
-		double cellProb = (sockets.isEmpty())? 0 : Math.pow(0.8, 1./sockets.size());
+		double cellProb = (sockets.isEmpty())? 0 : Math.pow(0.4, 1./sockets.size())*(maxCellProb - minCellProb) + minCellProb;
 		Random r = new Random();
-		if (r.nextFloat() < cellProb) {
+		if (r.nextFloat() < cellProb && t.size() == batchSize) {
 			if (pos >= sockets.size()) pos = 0;
 			PrintWriter writer = new PrintWriter(sockets.get(pos).getOutputStream());
 			writer.println(new Gson().toJson(new DataPacket(strategy.strategyName(), t)));

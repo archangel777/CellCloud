@@ -14,10 +14,89 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"/>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_centerInParent="true"
+        android:id="@+id/address"
+        android:layout_marginBottom="40dp">
+
+        <EditText
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="10"
+            android:maxLength="3"
+            android:inputType="number"
+            android:id="@+id/ip0"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="."/>
+        
+        <EditText
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:maxLength="3"
+            android:inputType="number"
+            android:id="@+id/ip1"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="."/>
+
+        <EditText
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="2"
+            android:maxLength="3"
+            android:inputType="number"
+            android:id="@+id/ip2"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="."/>
+
+        <EditText
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="2"
+            android:maxLength="3"
+            android:inputType="number"
+            android:id="@+id/ip3"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=":"
+            app:paddingStart="8dp"
+            app:paddingEnd="8dp"
+            android:textStyle="bold"/>
+
+        <EditText
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="3000"
+            android:maxLength="5"
+            android:inputType="number"
+            android:id="@+id/port"
+            android:textAlignment="center"/>
+
+    </LinearLayout>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_below="@id/address"
+        android:layout_centerHorizontal="true"
         android:id="@+id/main_btn"
         android:padding="18dp"
         android:text="Connect"
