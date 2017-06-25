@@ -1,22 +1,30 @@
+package utils;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class DataPool {
-	Queue<Long> pool;
+	private Queue<Long> pool;
 	
 	public DataPool() {
 		pool = new LinkedBlockingQueue<>();
 	}
 	
-	public DataPool(int n) {
+	public DataPool(int n, int mod) {
 		this();
 		System.out.println("Creating DataPool...");
 		Random r = new Random();
 		for (long i = 0; i < n; i++)
-			pool.add(Math.abs(r.nextInt())%n + 2039l);
+			pool.add((long)Math.abs(r.nextInt())%mod);
+		
 	}
+	
+	public DataPool(int n) {
+		this(n, n);
+	}
+	
+	
 	
 	public void insert(Long l) {
 		pool.add(l);

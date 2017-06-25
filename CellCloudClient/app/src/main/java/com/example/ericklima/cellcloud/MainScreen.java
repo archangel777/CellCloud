@@ -2,11 +2,17 @@ package com.example.ericklima.cellcloud;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
+import com.example.ericklima.cellcloud.strategies.MinReduceStrategy;
+import com.example.ericklima.cellcloud.strategies.ReduceStrategy;
+import com.example.ericklima.cellcloud.strategies.SumReduceStrategy;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
@@ -36,6 +42,7 @@ public class MainScreen extends AppCompatActivity {
 
     private ProgressDialog progress;
     private Button btn;
+    private TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +50,7 @@ public class MainScreen extends AppCompatActivity {
         setContentView(R.layout.activity_main_screen);
 
         btn = (Button) findViewById(R.id.main_btn);
+        textView = (TextView) findViewById(R.id.messenger);
 
         progress = new ProgressDialog(this);
         progress.setMessage("Trying to connect to server on port " + port + "...");
@@ -86,8 +94,7 @@ public class MainScreen extends AppCompatActivity {
             try {
                 socket.connect(new InetSocketAddress(host, port), timeout);
             } catch (IOException e) {
-                System.err.println("Failed to connect after " + timeout + "ms.");
-                //e.printStackTrace();
+                Log.e("Failed Connection", "Failed to connect after " + timeout + "ms.");
             }
 
             return socket;
@@ -98,6 +105,7 @@ public class MainScreen extends AppCompatActivity {
             super.onPostExecute(socket);
             progress.dismiss();
             if (socket.isConnected()) {
+                textView.setText("");
                 try {
                     PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -108,6 +116,9 @@ public class MainScreen extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+            else {
+                textView.setText("Failed to connect.");
             }
         }
     }
@@ -130,8 +141,8 @@ public class MainScreen extends AppCompatActivity {
                 while((line = in.readLine()) != null) {
                     processAndSendResult(line, out);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (IOException e) {
+                Log.e("Disconnection", "Socket disconnected.");
             }
             return null;
         }
@@ -139,17 +150,22 @@ public class MainScreen extends AppCompatActivity {
 
     public void processAndSendResult(String toProcess, PrintWriter out) {
         Gson gson = new Gson();
-        Type type = new TypeToken<List<Tuple<Long>>>(){}.getType();
-        ArrayList<Tuple<Long>> list = gson.fromJson(toProcess, type);
+        DataPacket pkt = gson.fromJson(toProcess, DataPacket.class);
+        ReduceStrategy strategy;
 
-        Long result = reduce(list);
+        switch(pkt.getProcessType()) {
+            default:
+            case "min":
+                strategy = new MinReduceStrategy();
+                break;
+            case "sum":
+                strategy = new SumReduceStrategy();
+                break;
+        }
+        Long result = strategy.reduce(pkt.getData());
+        //Log.d("result", result.toString());
         out.println(gson.toJson(result));
+        out.flush();
     }
 
-    public Long reduce(ArrayList<Tuple<Long>> t) {
-        if (t.size() == 1) return Math.min(t.get(0).getT1(), t.get(0).getT2());
-        Tuple<Long> t1 = t.remove(0), t2 = t.remove(0);
-        t.add(new Tuple<>(Math.min(t1.getT1(), t1.getT2()), Math.min(t2.getT1(), t2.getT2())));
-        return reduce(t);
-    }
 }

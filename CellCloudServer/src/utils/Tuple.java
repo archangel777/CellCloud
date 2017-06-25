@@ -1,3 +1,4 @@
+package utils;
 
 /**
  * Created by ErickLima on 23/06/2017.
