@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Cell Cloud</string>
+    <string name="send_photo">Find Person</string>
 </resources>
