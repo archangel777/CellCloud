@@ -22,7 +22,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 //import android.widget.Button;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -32,6 +34,8 @@ public class MainScreen extends AppCompatActivity {
 
     //private Button mButton;
     private ImageView mImageView;
+    private ProgressBar mProgressBar;
+    private Button mButton;
 
     private boolean isImageSelected = false;
 
@@ -50,8 +54,11 @@ public class MainScreen extends AppCompatActivity {
         multicastLock.acquire();
         wifiLock.acquire();
 
-        //mButton = (Button) findViewById(R.id.main_btn);
+        mButton = (Button) findViewById(R.id.main_btn);
+        mButton.setEnabled(false);
         mImageView = (ImageView) findViewById(R.id.upload_photo);
+        mProgressBar = (ProgressBar) findViewById(R.id.loadingPanel);
+        mProgressBar.setVisibility(View.GONE);
 
     }
 
@@ -67,6 +74,7 @@ public class MainScreen extends AppCompatActivity {
         } else {
             BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
             Bitmap[] bitmap = {drawable.getBitmap()};
+            //mImageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap[0], 60, 60, false));
             new Sender(this).execute(bitmap);
         }
     }
@@ -107,6 +115,7 @@ public class MainScreen extends AppCompatActivity {
             String picturePath = cursor.getString(columnIndex);
             cursor.close();
             mImageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+            new FaceCropper(mImageView, mProgressBar, mButton).cropImage();
             isImageSelected = true;
         }
     }
