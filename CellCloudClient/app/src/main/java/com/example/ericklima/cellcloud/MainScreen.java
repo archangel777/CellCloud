@@ -60,6 +60,8 @@ public class MainScreen extends AppCompatActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.loadingPanel);
         mProgressBar.setVisibility(View.GONE);
 
+        new Thread(new Listener()).start();
+
     }
 
     public void onClick(View v) {

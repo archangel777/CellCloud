@@ -5,5 +5,5 @@ package com.example.ericklima.cellcloud;
  */
 
 public class Constants {
-    public static final int PORT = 3000;
+    public static final int PORT = 12345;
 }

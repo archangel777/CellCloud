@@ -53,6 +53,7 @@ public class Sender extends AsyncTask<Bitmap, Void, Void>{
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, getBroadcastAddress(), Constants.PORT);
             socket.send(sendPacket);
             Log.d("SENDING", getClass().getName() + "Broadcast packet sent to: " + getBroadcastAddress().getHostAddress());
+            Log.d("N Bytes", "" + sendPacket.getLength());
         } catch (IOException e) {
             Log.e(TAG, "IOException: " + e.getMessage());
         }
