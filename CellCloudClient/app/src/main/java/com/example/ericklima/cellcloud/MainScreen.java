@@ -20,6 +20,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 //import android.widget.Button;
 import android.widget.Button;
@@ -29,8 +32,8 @@ import android.widget.ProgressBar;
 public class MainScreen extends AppCompatActivity {
 
     private static final String LOG_TAG = "WIFI LOG";
-    private static int RESULT_LOAD_IMAGE = 1;
-    private static final int REQUEST_PERMISSION = 6473;
+    private static final int REQUEST_PERMISSION_FIND = 6473;
+    private static final int REQUEST_PERMISSION_ADD = 6474;
 
     //private Button mButton;
     private ImageView mImageView;
@@ -64,6 +67,28 @@ public class MainScreen extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.add_btn) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                    && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        REQUEST_PERMISSION_ADD);
+            } else {
+                Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, REQUEST_PERMISSION_ADD);
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public void onClick(View v) {
         if (!isImageSelected) {
             AlertDialog.Builder builder;
@@ -84,41 +109,47 @@ public class MainScreen extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(final int requestCode, @NonNull final String[] permissions, @NonNull final int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_PERMISSION) {
+        if (requestCode == REQUEST_PERMISSION_FIND || requestCode == REQUEST_PERMISSION_ADD) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(i, RESULT_LOAD_IMAGE);
+                startActivityForResult(i, requestCode);
             }
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public void choosePhoto(View v) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSION);
+                    REQUEST_PERMISSION_FIND);
         } else {
             Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(i, RESULT_LOAD_IMAGE);
+            startActivityForResult(i, REQUEST_PERMISSION_FIND);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
-            Cursor cursor = getContentResolver().query(selectedImage,filePathColumn, null, null, null);
-            assert cursor != null;
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
-            cursor.close();
-            mImageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
-            new FaceCropper(mImageView, mProgressBar, mButton).cropImage();
-            isImageSelected = true;
+        if (resultCode == RESULT_OK && null != data) {
+            if (requestCode == REQUEST_PERMISSION_FIND || requestCode == REQUEST_PERMISSION_ADD) {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                assert cursor != null;
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String picturePath = cursor.getString(columnIndex);
+                cursor.close();
+                Bitmap rawImage = BitmapFactory.decodeFile(picturePath);
+                if (requestCode == REQUEST_PERMISSION_FIND) {
+                    mImageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+                    new FaceCropper(mImageView, mProgressBar, mButton).cropImage();
+                    isImageSelected = true;
+                } else {
+                    new Thread(new FaceSaver(rawImage, this)).start();
+                }
+            }
         }
     }
 
