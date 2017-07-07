@@ -14,13 +14,11 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,6 +39,8 @@ public class MainScreen extends AppCompatActivity {
     private Button mButton;
 
     private boolean isImageSelected = false;
+
+    static{ System.loadLibrary("opencv_java3"); }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +63,9 @@ public class MainScreen extends AppCompatActivity {
         mProgressBar = (ProgressBar) findViewById(R.id.loadingPanel);
         mProgressBar.setVisibility(View.GONE);
 
-        new Thread(new Listener()).start();
+        new Thread(new BroadcastListener(this)).start();
+
+        new Thread(new DirectListener(this)).start();
 
     }
 
@@ -102,7 +104,7 @@ public class MainScreen extends AppCompatActivity {
             BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
             Bitmap[] bitmap = {drawable.getBitmap()};
             //mImageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap[0], 60, 60, false));
-            new Sender(this).execute(bitmap);
+            new BroadcastSender(this).execute(bitmap);
         }
     }
 

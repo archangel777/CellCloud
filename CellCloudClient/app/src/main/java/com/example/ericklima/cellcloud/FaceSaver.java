@@ -13,7 +13,6 @@ import java.io.OutputStream;
 
 public class FaceSaver implements Runnable {
 
-    private static int counter = 0;
     private Context c;
     private Bitmap bitmap;
 
@@ -26,16 +25,20 @@ public class FaceSaver implements Runnable {
     public void run() {
         try {
             bitmap = FaceCropper.crop(bitmap, 180, 180);
-            String path = Environment.getExternalStorageDirectory().toString();
-            File file = new File(path, "face" + counter + ".jpg"); // the File to save , append increasing numeric counter to prevent files from getting overwritten.
+            String path = Environment.getExternalStorageDirectory().toString() + "/faces";
+            int counter = 0;
+            File dir = new File(path);
+            if (!dir.exists()) dir.mkdirs();
+            File file;
+            // the File to save , append increasing numeric counter to prevent files from getting overwritten.
+            while((file = new File(path, "face" + counter + ".jpg")).exists()) counter ++;
             OutputStream fOut = new FileOutputStream(file);
 
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
             fOut.flush(); // Not really required
             fOut.close(); // do not forget to close the stream
 
             MediaStore.Images.Media.insertImage(c.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
-            counter++;
         } catch (IOException e) {
             e.printStackTrace();
         }

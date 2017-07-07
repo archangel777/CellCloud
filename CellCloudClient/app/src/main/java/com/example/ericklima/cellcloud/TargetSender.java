@@ -2,8 +2,6 @@ package com.example.ericklima.cellcloud;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.DhcpInfo;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.util.Log;
@@ -20,17 +18,19 @@ import static android.content.ContentValues.TAG;
  * Created by ErickLima on 01/07/2017.
  */
 
-public class Sender extends AsyncTask<Bitmap, Void, Void>{
+public class TargetSender extends AsyncTask<Bitmap, Void, Void>{
 
     private Context c;
+    private InetAddress address;
 
-    public Sender(Context c) {
+    public TargetSender(Context c, InetAddress address) {
         this.c = c;
+        this.address = address;
     }
 
     @Override
     protected Void doInBackground(Bitmap... bitmaps) {
-        sendBroadcast(getBytesFromBitmap(bitmaps[0]));
+        send(getBytesFromBitmap(bitmaps[0]));
         return null;
     }
 
@@ -41,33 +41,20 @@ public class Sender extends AsyncTask<Bitmap, Void, Void>{
         return stream.toByteArray();
     }
 
-    private void sendBroadcast(byte[] sendData) {
+    private void send(byte[] sendData) {
         // Hack Prevent crash (sending should be done using an async task)
         StrictMode.ThreadPolicy policy = new   StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
         try {
             //Open a random port to send the package
+            int port = (address.toString().equals("/255.255.255.255"))? Constants.BROADCAST_PORT : Constants.RESULT_PORT;
             DatagramSocket socket = new DatagramSocket();
-            socket.setBroadcast(true);
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, getBroadcastAddress(), Constants.PORT);
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, port);
             socket.send(sendPacket);
-            Log.d("SENDING", getClass().getName() + "Broadcast packet sent to: " + getBroadcastAddress().getHostAddress());
-            Log.d("N Bytes", "" + sendPacket.getLength());
+            Log.d("SENDING", getClass().getName() + "Broadcast packet sent to: " + address);
         } catch (IOException e) {
             Log.e(TAG, "IOException: " + e.getMessage());
         }
-    }
-
-    private InetAddress getBroadcastAddress() throws IOException {
-        WifiManager wifi = (WifiManager) c.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        DhcpInfo dhcp = wifi.getDhcpInfo();
-        // handle null somehow
-
-        int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
-        byte[] quads = new byte[4];
-        for (int k = 0; k < 4; k++)
-            quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
-        return InetAddress.getByAddress(quads);
     }
 }
