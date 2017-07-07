@@ -48,7 +48,7 @@ public class TargetSender extends AsyncTask<Bitmap, Void, Void>{
 
         try {
             //Open a random port to send the package
-            int port = (address.toString().equals("/255.255.255.255"))? Constants.BROADCAST_PORT : Constants.RESULT_PORT;
+            int port = (address.toString().endsWith(".255"))? Constants.BROADCAST_PORT : Constants.RESULT_PORT;
             DatagramSocket socket = new DatagramSocket();
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, port);
             socket.send(sendPacket);
