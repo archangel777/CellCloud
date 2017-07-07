@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -18,8 +19,12 @@ import java.net.InetAddress;
 
 public class DirectListener extends Listener {
 
-    public DirectListener(MainScreen context) {
+    private ImageView imageView;
+    private byte[] recvBuf;
+
+    public DirectListener(MainScreen context, ImageView view) {
         super(context);
+        imageView = view;
     }
 
     @Override
@@ -28,13 +33,12 @@ public class DirectListener extends Listener {
             localHost = getLocalIpAddress();
             //Keep a socket open to listen to all the UDP trafic that is destined for this port
             DatagramSocket socket = new DatagramSocket(Constants.RESULT_PORT, InetAddress.getByName("0.0.0.0"));
-            socket.setBroadcast(true);
 
             while (true) {
                 Log.i(TAG,"Ready to receive broadcast packets!");
 
                 //Receive a packet
-                byte[] recvBuf = new byte[5000];
+                recvBuf = new byte[5000];
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
                 Log.d(TAG, "Address: " + packet.getAddress().getHostAddress() + ", Port: " + String.valueOf(packet.getPort()));

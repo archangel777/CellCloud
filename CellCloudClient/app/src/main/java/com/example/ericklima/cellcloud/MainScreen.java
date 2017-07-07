@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Environment;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -19,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +28,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+
+import java.io.File;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -65,7 +69,7 @@ public class MainScreen extends AppCompatActivity {
 
         new Thread(new BroadcastListener(this)).start();
 
-        new Thread(new DirectListener(this)).start();
+        new Thread(new DirectListener(this, mImageView)).start();
 
     }
 
@@ -87,6 +91,12 @@ public class MainScreen extends AppCompatActivity {
                 Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(i, REQUEST_PERMISSION_ADD);
             }
+        } else if (id == R.id.rmv_btn) {
+            String path = Environment.getExternalStorageDirectory().toString() + "/faces";
+            File dir = new File(path);
+            if (dir.exists())
+                for (File f : dir.listFiles())
+                    f.delete();
         }
         return super.onOptionsItemSelected(item);
     }

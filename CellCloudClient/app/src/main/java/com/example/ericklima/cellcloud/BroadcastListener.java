@@ -36,9 +36,8 @@ public class BroadcastListener extends Listener {
                 byte[] recvBuf = new byte[5000];
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
-                Log.d(TAG, "Address: " + packet.getAddress().getHostAddress() + ", Port: " + String.valueOf(packet.getPort()));
 
-                    //if (!isFromPC(packet.getAddress())) {
+                if (!isFromPC(packet.getAddress())) {
                     //Packet received
                     Log.i(TAG, "Packet received from: " + packet.getAddress().getHostAddress());
                     Bitmap bitmap = BitmapFactory.decodeByteArray(recvBuf, 0, recvBuf.length);
@@ -47,10 +46,11 @@ public class BroadcastListener extends Listener {
                     File dir = new File(path);
                     if (dir.exists())
                         for (File f : dir.listFiles()) {
+                            Log.d("File Name", f.getName());
                             Bitmap b = BitmapFactory.decodeFile(f.getAbsolutePath());
                             comparator.run(b);
                         }
-                    //}
+                }
             }
         } catch (IOException ex) {
             Log.i(TAG, "Oops!! " + ex.getMessage());

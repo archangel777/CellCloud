@@ -32,8 +32,9 @@ public class ImageComparator {
 
     private MainScreen context;
     private InetAddress address;
-    public static final int min_matches = 70;
-    public static final int min_dist = 30;
+    //public static final int min_matches = 70;
+    //public static final int min_dist = 30;
+    public static final int DUPLICATE_LIMIT = 4000;
 
     private Bitmap b1;
     private Mat hist1;
@@ -81,107 +82,107 @@ public class ImageComparator {
             double compare = Imgproc.compareHist(hist1, hist2, Imgproc.CV_COMP_CHISQR);
             Log.d("ImageComparator", "compare: " + compare);
 
-            if (compare < 4000) {
+            if (compare < DUPLICATE_LIMIT) {
                 Log.d("DUPLICATE", "Found duplicate!!");
-                new TargetSender(context, address).execute(b2);
+                new TargetSender(context, address).execute(new Bitmap[]{b2});
             }
             //new asyncTask(context, b1, b2, address).execute();
 
         }
     }
 
-    private static class asyncTask extends AsyncTask<Void, Void, Void> {
-        private static Mat img1, img2, descriptors, dupDescriptors;
-        private static FeatureDetector detector;
-        private static DescriptorExtractor DescExtractor;
-        private static DescriptorMatcher matcher;
-        private static MatOfKeyPoint keypoints, dupKeypoints;
-        private static MatOfDMatch matches, matches_final_mat;
-        private static boolean foundDuplicate = false;
-        private MainScreen asyncTaskContext=null;
-        private Bitmap bmpimg1, bmpimg2;
-        private InetAddress address;
-
-        private static Scalar RED = new Scalar(255,0,0);
-        private static Scalar GREEN = new Scalar(0,255,0);
-
-        public asyncTask(MainScreen context, Bitmap b1, Bitmap b2, InetAddress address) {
-            asyncTaskContext=context;
-            bmpimg1 = b1;
-            bmpimg2 = b2;
-            this.address = address;
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            compare();
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            try {
-                List<DMatch> finalMatchesList = matches_final_mat.toList();
-
-                if (!foundDuplicate && finalMatchesList.size() > min_matches) {
-                    foundDuplicate = true;
-                    Log.d("DUPLICATE", "Found duplicate!!");
-                    new TargetSender(asyncTaskContext, address).execute(bmpimg2);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(asyncTaskContext, e.toString(), Toast.LENGTH_LONG).show();
-            }
-        }
-
-        void compare() {
-            try {
-                bmpimg1 = bmpimg1.copy(Bitmap.Config.ARGB_8888, true);
-                bmpimg1 = bmpimg1.copy(Bitmap.Config.ARGB_8888, true);
-                img1 = new Mat();
-                img2 = new Mat();
-                Utils.bitmapToMat(bmpimg1, img1);
-                Utils.bitmapToMat(bmpimg2, img2);
-                Imgproc.cvtColor(img1, img1, Imgproc.COLOR_BGR2RGB);
-                Imgproc.cvtColor(img2, img2, Imgproc.COLOR_BGR2RGB);
-                detector = FeatureDetector.create(FeatureDetector.PYRAMID_FAST);
-                DescExtractor = DescriptorExtractor.create(DescriptorExtractor.BRISK);
-                matcher = DescriptorMatcher
-                        .create(DescriptorMatcher.BRUTEFORCE_HAMMING);
-
-                keypoints = new MatOfKeyPoint();
-                dupKeypoints = new MatOfKeyPoint();
-                descriptors = new Mat();
-                dupDescriptors = new Mat();
-                matches = new MatOfDMatch();
-                detector.detect(img1, keypoints);
-                Log.d("LOG!", "number of query Keypoints= " + keypoints.size());
-                detector.detect(img2, dupKeypoints);
-                Log.d("LOG!", "number of dup Keypoints= " + dupKeypoints.size());
-                // Descript keypoints
-                DescExtractor.compute(img1, keypoints, descriptors);
-                DescExtractor.compute(img2, dupKeypoints, dupDescriptors);
-                Log.d("LOG!", "number of descriptors= " + descriptors.size());
-                Log.d("LOG!",
-                        "number of dupDescriptors= " + dupDescriptors.size());
-                // matching descriptors
-                matcher.match(descriptors, dupDescriptors, matches);
-                Log.d("LOG!", "Matches Size " + matches.size());
-                // New method of finding best matches
-                List<DMatch> matchesList = matches.toList();
-                List<DMatch> matches_final = new ArrayList<DMatch>();
-                for (int i = 0; i < matchesList.size(); i++) {
-                    if (matchesList.get(i).distance <= min_dist) {
-                        matches_final.add(matches.toList().get(i));
-                    }
-                }
-
-                matches_final_mat = new MatOfDMatch();
-                matches_final_mat.fromList(matches_final);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
+//    private static class asyncTask extends AsyncTask<Void, Void, Void> {
+//        private static Mat img1, img2, descriptors, dupDescriptors;
+//        private static FeatureDetector detector;
+//        private static DescriptorExtractor DescExtractor;
+//        private static DescriptorMatcher matcher;
+//        private static MatOfKeyPoint keypoints, dupKeypoints;
+//        private static MatOfDMatch matches, matches_final_mat;
+//        private static boolean foundDuplicate = false;
+//        private MainScreen asyncTaskContext=null;
+//        private Bitmap bmpimg1, bmpimg2;
+//        private InetAddress address;
+//
+//        private static Scalar RED = new Scalar(255,0,0);
+//        private static Scalar GREEN = new Scalar(0,255,0);
+//
+//        public asyncTask(MainScreen context, Bitmap b1, Bitmap b2, InetAddress address) {
+//            asyncTaskContext=context;
+//            bmpimg1 = b1;
+//            bmpimg2 = b2;
+//            this.address = address;
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... arg0) {
+//            compare();
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Void result) {
+//            try {
+//                List<DMatch> finalMatchesList = matches_final_mat.toList();
+//
+//                if (!foundDuplicate && finalMatchesList.size() > min_matches) {
+//                    foundDuplicate = true;
+//                    Log.d("DUPLICATE", "Found duplicate!!");
+//                    new TargetSender(asyncTaskContext, address).execute(bmpimg2);
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                Toast.makeText(asyncTaskContext, e.toString(), Toast.LENGTH_LONG).show();
+//            }
+//        }
+//
+//        void compare() {
+//            try {
+//                bmpimg1 = bmpimg1.copy(Bitmap.Config.ARGB_8888, true);
+//                bmpimg1 = bmpimg1.copy(Bitmap.Config.ARGB_8888, true);
+//                img1 = new Mat();
+//                img2 = new Mat();
+//                Utils.bitmapToMat(bmpimg1, img1);
+//                Utils.bitmapToMat(bmpimg2, img2);
+//                Imgproc.cvtColor(img1, img1, Imgproc.COLOR_BGR2RGB);
+//                Imgproc.cvtColor(img2, img2, Imgproc.COLOR_BGR2RGB);
+//                detector = FeatureDetector.create(FeatureDetector.PYRAMID_FAST);
+//                DescExtractor = DescriptorExtractor.create(DescriptorExtractor.BRISK);
+//                matcher = DescriptorMatcher
+//                        .create(DescriptorMatcher.BRUTEFORCE_HAMMING);
+//
+//                keypoints = new MatOfKeyPoint();
+//                dupKeypoints = new MatOfKeyPoint();
+//                descriptors = new Mat();
+//                dupDescriptors = new Mat();
+//                matches = new MatOfDMatch();
+//                detector.detect(img1, keypoints);
+//                Log.d("LOG!", "number of query Keypoints= " + keypoints.size());
+//                detector.detect(img2, dupKeypoints);
+//                Log.d("LOG!", "number of dup Keypoints= " + dupKeypoints.size());
+//                // Descript keypoints
+//                DescExtractor.compute(img1, keypoints, descriptors);
+//                DescExtractor.compute(img2, dupKeypoints, dupDescriptors);
+//                Log.d("LOG!", "number of descriptors= " + descriptors.size());
+//                Log.d("LOG!",
+//                        "number of dupDescriptors= " + dupDescriptors.size());
+//                // matching descriptors
+//                matcher.match(descriptors, dupDescriptors, matches);
+//                Log.d("LOG!", "Matches Size " + matches.size());
+//                // New method of finding best matches
+//                List<DMatch> matchesList = matches.toList();
+//                List<DMatch> matches_final = new ArrayList<DMatch>();
+//                for (int i = 0; i < matchesList.size(); i++) {
+//                    if (matchesList.get(i).distance <= min_dist) {
+//                        matches_final.add(matches.toList().get(i));
+//                    }
+//                }
+//
+//                matches_final_mat = new MatOfDMatch();
+//                matches_final_mat.fromList(matches_final);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//        }
+//    }
 }
