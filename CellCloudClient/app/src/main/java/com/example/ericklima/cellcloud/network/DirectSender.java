@@ -1,10 +1,12 @@
-package com.example.ericklima.cellcloud;
+package com.example.ericklima.cellcloud.network;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.util.Log;
+
+import com.example.ericklima.cellcloud.Constants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

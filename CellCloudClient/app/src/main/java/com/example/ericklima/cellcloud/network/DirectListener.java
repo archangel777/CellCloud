@@ -1,13 +1,12 @@
-package com.example.ericklima.cellcloud;
+package com.example.ericklima.cellcloud.network;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.File;
+import com.example.ericklima.cellcloud.Constants;
+import com.example.ericklima.cellcloud.MainScreen;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

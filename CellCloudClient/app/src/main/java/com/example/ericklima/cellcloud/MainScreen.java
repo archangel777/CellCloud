@@ -13,7 +13,6 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Environment;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -30,7 +29,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import java.io.File;
+import com.example.ericklima.cellcloud.image_list.AddedImagesActivity;
+import com.example.ericklima.cellcloud.network.BroadcastListener;
+import com.example.ericklima.cellcloud.network.BroadcastSender;
+import com.example.ericklima.cellcloud.network.DirectListener;
+
 import java.io.IOException;
 
 public class MainScreen extends AppCompatActivity {
@@ -38,6 +41,7 @@ public class MainScreen extends AppCompatActivity {
     private static final String LOG_TAG = "WIFI LOG";
     private static final int REQUEST_PERMISSION_FIND = 6473;
     private static final int REQUEST_PERMISSION_ADD = 6474;
+    private static final int REQUEST_PERMISSION_LIST = 6475;
 
     //private Button mButton;
     private ImageView mImageView;
@@ -94,11 +98,15 @@ public class MainScreen extends AppCompatActivity {
                 startActivityForResult(i, REQUEST_PERMISSION_ADD);
             }
         } else if (id == R.id.rmv_btn) {
-            String path = Environment.getExternalStorageDirectory().toString() + "/faces";
-            File dir = new File(path);
-            if (dir.exists())
-                for (File f : dir.listFiles())
-                    f.delete();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                    && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        REQUEST_PERMISSION_LIST);
+            } else {
+                Intent it = new Intent(this, AddedImagesActivity.class);
+                startActivity(it);
+            }
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -126,6 +134,10 @@ public class MainScreen extends AppCompatActivity {
                 Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(i, requestCode);
             }
+        }
+        else if (requestCode == REQUEST_PERMISSION_LIST) {
+            Intent it = new Intent(this, AddedImagesActivity.class);
+            startActivity(it);
         }
     }
 

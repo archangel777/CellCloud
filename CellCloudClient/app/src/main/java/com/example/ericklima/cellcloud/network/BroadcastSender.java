@@ -1,4 +1,4 @@
-package com.example.ericklima.cellcloud;
+package com.example.ericklima.cellcloud.network;
 
 import android.content.Context;
 import android.net.DhcpInfo;

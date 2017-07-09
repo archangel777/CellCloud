@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/rmv_btn"
-        android:icon="@drawable/account_remove"
+        android:icon="@drawable/folder_image"
         android:title="Text to be seen by user"
         app:showAsAction="always"
         android:orderInCategory="0"/>

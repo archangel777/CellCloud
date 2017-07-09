@@ -1,4 +1,4 @@
-package com.example.ericklima.cellcloud;
+package com.example.ericklima.cellcloud.network;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -6,6 +6,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.example.ericklima.cellcloud.MainScreen;
 
 import java.io.File;
 import java.io.IOException;

@@ -3,6 +3,8 @@ package com.example.ericklima.cellcloud;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.example.ericklima.cellcloud.network.DirectSender;
+
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -20,7 +22,7 @@ public class ImageComparator {
     private InetAddress address;
     //public static final int min_matches = 70;
     //public static final int min_dist = 30;
-    public static final int DUPLICATE_LIMIT = 4000;
+    public static final int DUPLICATE_LIMIT = 40000;
 
     private Bitmap b1;
     private Mat hist1;
@@ -29,17 +31,17 @@ public class ImageComparator {
         context = c;
         this.address = address;
 
-        this.b1 = Bitmap.createScaledBitmap(b1, 50, 50, true);
+        this.b1 = Bitmap.createScaledBitmap(b1, 100, 100, true);
         Mat img1 = new Mat();
         Utils.bitmapToMat(b1, img1);
         Imgproc.cvtColor(img1, img1, Imgproc.COLOR_RGBA2GRAY);
         img1.convertTo(img1, CvType.CV_32F);
         hist1 = new Mat();
-        MatOfInt histSize = new MatOfInt(240);
+        MatOfInt histSize = new MatOfInt(1000);
         MatOfInt channels = new MatOfInt(0);
         ArrayList<Mat> bgr_planes1 = new ArrayList<>();
         Core.split(img1, bgr_planes1);
-        MatOfFloat histRanges = new MatOfFloat(0f, 240f);
+        MatOfFloat histRanges = new MatOfFloat(0f, 1000f);
         Imgproc.calcHist(bgr_planes1, channels, new Mat(), hist1, histSize, histRanges, false);
         Core.normalize(hist1, hist1, 0, hist1.rows(), Core.NORM_MINMAX, -1, new Mat());
         img1.convertTo(img1, CvType.CV_32F);
@@ -48,18 +50,18 @@ public class ImageComparator {
 
     public void run(Bitmap b2) {
         if (b2 != null) {
-            b2 = Bitmap.createScaledBitmap(b2, 50, 50, true);
+            b2 = Bitmap.createScaledBitmap(b2, 100, 100, true);
             Mat img2 = new Mat();
             Utils.bitmapToMat(b2, img2);
             Imgproc.cvtColor(img2, img2, Imgproc.COLOR_RGBA2GRAY);
             img2.convertTo(img2, CvType.CV_32F);
             //Log.d("ImageComparator", "img1:"+img1.rows()+"x"+img1.cols()+" img2:"+img2.rows()+"x"+img2.cols());
             Mat hist2 = new Mat();
-            MatOfInt histSize = new MatOfInt(240);
+            MatOfInt histSize = new MatOfInt(1000);
             MatOfInt channels = new MatOfInt(0);
             ArrayList<Mat> bgr_planes2 = new ArrayList<Mat>();
             Core.split(img2, bgr_planes2);
-            MatOfFloat histRanges = new MatOfFloat(0f, 240f);
+            MatOfFloat histRanges = new MatOfFloat(0f, 1000f);
             Imgproc.calcHist(bgr_planes2, channels, new Mat(), hist2, histSize, histRanges, false);
             Core.normalize(hist2, hist2, 0, hist2.rows(), Core.NORM_MINMAX, -1, new Mat());
             img2.convertTo(img2, CvType.CV_32F);
