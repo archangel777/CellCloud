@@ -3,7 +3,9 @@ package com.example.ericklima.cellcloud;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +19,11 @@ import java.net.InetAddress;
 
 public class BroadcastListener extends Listener {
 
+    private ImageView imageView;
+
     public BroadcastListener(MainScreen context) {
         super(context);
+        imageView = (ImageView) context.findViewById(R.id.upload_photo);
     }
 
     @Override
@@ -33,14 +38,16 @@ public class BroadcastListener extends Listener {
                 Log.i(TAG,"Ready to receive broadcast packets!");
 
                 //Receive a packet
-                byte[] recvBuf = new byte[5000];
+                byte[] recvBuf = new byte[15000];
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
+                byte[] data = new byte[packet.getLength()];
+                System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
 
                 if (!isFromPC(packet.getAddress())) {
                     //Packet received
                     Log.i(TAG, "Packet received from: " + packet.getAddress().getHostAddress());
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(recvBuf, 0, recvBuf.length);
+                    final Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                     ImageComparator comparator = new ImageComparator(context, bitmap, packet.getAddress());
                     String path = Environment.getExternalStorageDirectory().toString() + "/faces";
                     File dir = new File(path);

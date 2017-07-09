@@ -7,7 +7,9 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -20,7 +22,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +31,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import java.io.File;
+import java.io.IOException;
 
 public class MainScreen extends AppCompatActivity {
 
@@ -112,9 +114,7 @@ public class MainScreen extends AppCompatActivity {
             builder.setMessage("You must select a photo to send.").show();
         } else {
             BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
-            Bitmap[] bitmap = {drawable.getBitmap()};
-            //mImageView.setImageBitmap(Bitmap.createScaledBitmap(bitmap[0], 60, 60, false));
-            new BroadcastSender(this).execute(bitmap);
+            new BroadcastSender(this).execute(drawable.getBitmap());
         }
     }
 
@@ -153,16 +153,40 @@ public class MainScreen extends AppCompatActivity {
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 String picturePath = cursor.getString(columnIndex);
                 cursor.close();
-                Bitmap rawImage = BitmapFactory.decodeFile(picturePath);
+                Bitmap imageBitmap = getFixedImage(picturePath);
                 if (requestCode == REQUEST_PERMISSION_FIND) {
-                    mImageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+                    mImageView.setImageBitmap(imageBitmap);
                     new FaceCropper(mImageView, mProgressBar, mButton).cropImage();
                     isImageSelected = true;
                 } else {
-                    new Thread(new FaceSaver(rawImage, this)).start();
+                    new Thread(new FaceSaver(imageBitmap, this)).start();
                 }
             }
         }
+    }
+
+    private Bitmap getFixedImage(String imagePath) {
+        Bitmap rawImage = BitmapFactory.decodeFile(imagePath);
+        float aspectRatio = rawImage.getWidth() / (float) rawImage.getHeight();
+        int width = 480;
+        int height = Math.round(width / aspectRatio);
+        Bitmap rescaled = Bitmap.createScaledBitmap(rawImage, width, height, false);
+        rawImage.recycle();
+        Matrix matrix = new Matrix();
+        try {
+            ExifInterface exif = new ExifInterface(imagePath);
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+            switch(orientation) {
+                case 3: matrix.postRotate(180); break;
+                case 6: matrix.postRotate(90); break;
+                case 8: matrix.postRotate(270); break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Bitmap rotated = Bitmap.createBitmap(rescaled, 0, 0, rescaled.getWidth(), rescaled.getHeight(), matrix, true);
+        rescaled.recycle();
+        return rotated;
     }
 
 }

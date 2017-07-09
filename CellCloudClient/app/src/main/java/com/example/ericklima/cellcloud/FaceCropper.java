@@ -49,7 +49,7 @@ public class FaceCropper {
 
             @Override
             protected Bitmap doInBackground(Void... voids) {
-                return crop(drawable.getBitmap(), viewHeight, viewWidth);
+                return crop(drawable.getBitmap(), 180, 180);
             }
 
             @Override
@@ -128,10 +128,10 @@ public class FaceCropper {
                     }
                 }
 
-                int x = contain((int) (myMidPoint.x - 2 * myEyesDistance), 0, b.getWidth());
-                int y = contain((int) (myMidPoint.y - 1.5 * myEyesDistance), 0, b.getHeight());
-                int sizeX = Math.min(Math.min((int) (4 * myEyesDistance), b.getWidth() - x), b.getHeight() - y);
-                int sizeY = Math.min(Math.min((int) (4 * myEyesDistance), b.getWidth() - x), b.getHeight() - y);
+                int x = contain((int) (myMidPoint.x - 1.5 * myEyesDistance), 0, b.getWidth());
+                int y = contain((int) (myMidPoint.y - 1.2 * myEyesDistance), 0, b.getHeight());
+                int sizeX = Math.min(Math.min((int) (3 * myEyesDistance), b.getWidth() - x), b.getHeight() - y);
+                int sizeY = Math.min(Math.min((int) (3 * myEyesDistance), b.getWidth() - x), b.getHeight() - y);
 
                 Log.d("Sizes", x + " | " + y + " | " + sizeX + " | " + sizeY);
                 result = Bitmap.createBitmap(b, x, y, sizeX, sizeY, matrix, true);

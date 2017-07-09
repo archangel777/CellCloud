@@ -1,32 +1,18 @@
 package com.example.ericklima.cellcloud;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
-import org.opencv.core.DMatch;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
-import org.opencv.core.MatOfKeyPoint;
-import org.opencv.core.Scalar;
-import org.opencv.features2d.DescriptorExtractor;
-import org.opencv.features2d.DescriptorMatcher;
-import org.opencv.features2d.FeatureDetector;
-import org.opencv.features2d.Features2d;
 import org.opencv.imgproc.Imgproc;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.List;
 
 public class ImageComparator {
 
@@ -43,17 +29,17 @@ public class ImageComparator {
         context = c;
         this.address = address;
 
-        this.b1 = Bitmap.createScaledBitmap(b1, 100, 100, true);
+        this.b1 = Bitmap.createScaledBitmap(b1, 50, 50, true);
         Mat img1 = new Mat();
         Utils.bitmapToMat(b1, img1);
         Imgproc.cvtColor(img1, img1, Imgproc.COLOR_RGBA2GRAY);
         img1.convertTo(img1, CvType.CV_32F);
         hist1 = new Mat();
-        MatOfInt histSize = new MatOfInt(180);
+        MatOfInt histSize = new MatOfInt(240);
         MatOfInt channels = new MatOfInt(0);
         ArrayList<Mat> bgr_planes1 = new ArrayList<>();
         Core.split(img1, bgr_planes1);
-        MatOfFloat histRanges = new MatOfFloat(0f, 180f);
+        MatOfFloat histRanges = new MatOfFloat(0f, 240f);
         Imgproc.calcHist(bgr_planes1, channels, new Mat(), hist1, histSize, histRanges, false);
         Core.normalize(hist1, hist1, 0, hist1.rows(), Core.NORM_MINMAX, -1, new Mat());
         img1.convertTo(img1, CvType.CV_32F);
@@ -62,18 +48,18 @@ public class ImageComparator {
 
     public void run(Bitmap b2) {
         if (b2 != null) {
-            b2 = Bitmap.createScaledBitmap(b2, 100, 100, true);
+            b2 = Bitmap.createScaledBitmap(b2, 50, 50, true);
             Mat img2 = new Mat();
             Utils.bitmapToMat(b2, img2);
             Imgproc.cvtColor(img2, img2, Imgproc.COLOR_RGBA2GRAY);
             img2.convertTo(img2, CvType.CV_32F);
             //Log.d("ImageComparator", "img1:"+img1.rows()+"x"+img1.cols()+" img2:"+img2.rows()+"x"+img2.cols());
             Mat hist2 = new Mat();
-            MatOfInt histSize = new MatOfInt(180);
+            MatOfInt histSize = new MatOfInt(240);
             MatOfInt channels = new MatOfInt(0);
             ArrayList<Mat> bgr_planes2 = new ArrayList<Mat>();
             Core.split(img2, bgr_planes2);
-            MatOfFloat histRanges = new MatOfFloat(0f, 180f);
+            MatOfFloat histRanges = new MatOfFloat(0f, 240f);
             Imgproc.calcHist(bgr_planes2, channels, new Mat(), hist2, histSize, histRanges, false);
             Core.normalize(hist2, hist2, 0, hist2.rows(), Core.NORM_MINMAX, -1, new Mat());
             img2.convertTo(img2, CvType.CV_32F);
@@ -84,7 +70,7 @@ public class ImageComparator {
 
             if (compare < DUPLICATE_LIMIT) {
                 Log.d("DUPLICATE", "Found duplicate!!");
-                new TargetSender(context, address).execute(new Bitmap[]{b2});
+                new DirectSender(context, address).execute(b2);
             }
             //new asyncTask(context, b1, b2, address).execute();
 
@@ -127,7 +113,7 @@ public class ImageComparator {
 //                if (!foundDuplicate && finalMatchesList.size() > min_matches) {
 //                    foundDuplicate = true;
 //                    Log.d("DUPLICATE", "Found duplicate!!");
-//                    new TargetSender(asyncTaskContext, address).execute(bmpimg2);
+//                    new DirectSender(asyncTaskContext, address).execute(bmpimg2);
 //                }
 //            } catch (Exception e) {
 //                e.printStackTrace();

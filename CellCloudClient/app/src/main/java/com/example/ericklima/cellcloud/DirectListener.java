@@ -38,15 +38,17 @@ public class DirectListener extends Listener {
                 Log.i(TAG,"Ready to receive broadcast packets!");
 
                 //Receive a packet
-                recvBuf = new byte[5000];
+                recvBuf = new byte[15000];
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
+                byte[] data = new byte[packet.getLength()];
+                System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
                 Log.d(TAG, "Address: " + packet.getAddress().getHostAddress() + ", Port: " + String.valueOf(packet.getPort()));
 
                 Log.d("FOUND", "FOUND THE FACE !!!!! NICEEEEEEEEEE");
                 handler.post(new Runnable() {
-                    @Override
-                    public void run() {
+                        @Override
+                        public void run() {
                         Toast.makeText(context, "Found the face!", Toast.LENGTH_LONG).show();
                     }
                 });

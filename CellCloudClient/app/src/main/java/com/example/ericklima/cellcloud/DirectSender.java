@@ -18,12 +18,12 @@ import static android.content.ContentValues.TAG;
  * Created by ErickLima on 01/07/2017.
  */
 
-public class TargetSender extends AsyncTask<Bitmap, Void, Void>{
+public class DirectSender extends AsyncTask<Bitmap, Void, Void>{
 
     private Context c;
     private InetAddress address;
 
-    public TargetSender(Context c, InetAddress address) {
+    public DirectSender(Context c, InetAddress address) {
         this.c = c;
         this.address = address;
     }
@@ -35,9 +35,9 @@ public class TargetSender extends AsyncTask<Bitmap, Void, Void>{
     }
 
     private byte[] getBytesFromBitmap(Bitmap bitmap) {
-        bitmap = Bitmap.createScaledBitmap(bitmap, 60, 60, false);
+        bitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         return stream.toByteArray();
     }
 
@@ -53,6 +53,7 @@ public class TargetSender extends AsyncTask<Bitmap, Void, Void>{
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, port);
             socket.send(sendPacket);
             Log.d("SENDING", getClass().getName() + "Broadcast packet sent to: " + address);
+            Log.d("SENDING", "Size: " + sendPacket.getLength());
         } catch (IOException e) {
             Log.e(TAG, "IOException: " + e.getMessage());
         }
