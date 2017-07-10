@@ -1,5 +1,7 @@
 package com.example.ericklima.cellcloud.network;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -43,12 +45,12 @@ public class DirectListener extends Listener {
                 byte[] data = new byte[packet.getLength()];
                 System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
                 Log.d(TAG, "Address: " + packet.getAddress().getHostAddress() + ", Port: " + String.valueOf(packet.getPort()));
+                final Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 
-                Log.d("FOUND", "FOUND THE FACE !!!!! NICEEEEEEEEEE");
                 handler.post(new Runnable() {
                         @Override
                         public void run() {
-                        Toast.makeText(context, "Found the face!", Toast.LENGTH_LONG).show();
+                        getContext().receiveResult(bitmap);
                     }
                 });
             }

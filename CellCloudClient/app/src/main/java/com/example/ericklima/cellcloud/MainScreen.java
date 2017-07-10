@@ -13,10 +13,14 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 //import android.widget.Button;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -33,6 +38,7 @@ import com.example.ericklima.cellcloud.image_list.AddedImagesActivity;
 import com.example.ericklima.cellcloud.network.BroadcastListener;
 import com.example.ericklima.cellcloud.network.BroadcastSender;
 import com.example.ericklima.cellcloud.network.DirectListener;
+import com.example.ericklima.cellcloud.results.ResultsFragment;
 
 import java.io.IOException;
 
@@ -47,6 +53,11 @@ public class MainScreen extends AppCompatActivity {
     private ImageView mImageView;
     private ProgressBar mProgressBar;
     private Button mButton;
+    private FrameLayout fragmentContainer;
+
+    FragmentManager fm;
+    private ResultsFragment resultsFragment;
+    private boolean canCloseFragment = false;
 
     private boolean isImageSelected = false;
 
@@ -67,11 +78,15 @@ public class MainScreen extends AppCompatActivity {
         multicastLock.acquire();
         wifiLock.acquire();
 
+        fragmentContainer = (FrameLayout) findViewById(R.id.fragment_place);
         mButton = (Button) findViewById(R.id.main_btn);
         mButton.setEnabled(false);
         mImageView = (ImageView) findViewById(R.id.upload_photo);
         mProgressBar = (ProgressBar) findViewById(R.id.loadingPanel);
         mProgressBar.setVisibility(View.GONE);
+
+        fm = getSupportFragmentManager();
+        resultsFragment = new ResultsFragment();
 
         new Thread(new BroadcastListener(this)).start();
 
@@ -123,6 +138,19 @@ public class MainScreen extends AppCompatActivity {
         } else {
             BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
             new BroadcastSender(this).execute(drawable.getBitmap());
+            FragmentManager fm = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fm.beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_place, resultsFragment);
+            fragmentTransaction.addToBackStack("result");
+            fragmentTransaction.commit();
+            canCloseFragment = false;
+            fragmentContainer.setClickable(true);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    canCloseFragment = true;
+                }
+            }, 3000);
         }
     }
 
@@ -199,6 +227,23 @@ public class MainScreen extends AppCompatActivity {
         Bitmap rotated = Bitmap.createBitmap(rescaled, 0, 0, rescaled.getWidth(), rescaled.getHeight(), matrix, true);
         rescaled.recycle();
         return rotated;
+    }
+
+    public void receiveResult(Bitmap b) {
+        if (resultsFragment.isVisible())
+            resultsFragment.addBitmap(b);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (canCloseFragment) {
+            if (fm.getBackStackEntryCount() != 0) {
+                fm.popBackStack();
+                fragmentContainer.setClickable(false);
+            } else {
+                super.onBackPressed();
+            }
+        }
     }
 
 }

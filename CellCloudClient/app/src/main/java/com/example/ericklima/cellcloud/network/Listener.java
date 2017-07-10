@@ -53,4 +53,8 @@ public abstract class Listener implements Runnable {
         }
         return null;
     }
+
+    public MainScreen getContext() {
+        return context;
+    }
 }

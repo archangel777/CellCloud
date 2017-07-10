@@ -1,48 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.ericklima.cellcloud.MainScreen">
-
+    
     <RelativeLayout
-        android:layout_width="180dp"
-        android:layout_height="180dp"
-        android:maxWidth="180dp"
-        android:maxHeight="180dp"
-        android:minWidth="180dp"
-        android:minHeight="180dp"
-        android:gravity="center"
-        android:layout_centerInParent="true">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal">
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/upload_photo"
-            android:id="@+id/upload_photo"
-            android:contentDescription="@string/send_photo"
-            android:onClick="choosePhoto"/>
+        <RelativeLayout
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:maxWidth="180dp"
+            android:maxHeight="180dp"
+            android:minWidth="180dp"
+            android:minHeight="180dp"
+            android:gravity="center"
+            android:layout_centerInParent="true">
 
-        <ProgressBar
-            android:id="@+id/loadingPanel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="64dp"
-            android:indeterminate="true"
-            android:layout_centerInParent="true"
-            android:background="@color/dark"/>
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/upload_photo"
+                android:id="@+id/upload_photo"
+                android:contentDescription="@string/send_photo"
+                android:onClick="choosePhoto"
+                android:layout_centerInParent="true"/>
+
+            <ProgressBar
+                android:id="@+id/loadingPanel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="true"
+                android:padding="12dp"
+                android:layout_centerInParent="true"
+                android:background="@color/dark"/>
+
+        </RelativeLayout>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/main_btn"
+            android:padding="24dp"
+            android:text="@string/send_photo"
+            android:onClick="onClick"
+            android:layout_marginBottom="48dp"/>
+
     </RelativeLayout>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/main_btn"
-        android:layout_marginBottom="32dp"
-        android:padding="18dp"
-        android:text="@string/send_photo"
-        android:onClick="onClick"/>
+    <FrameLayout
+        android:id="@+id/fragment_place"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="32dp"/>
 
-</RelativeLayout>
+</FrameLayout>

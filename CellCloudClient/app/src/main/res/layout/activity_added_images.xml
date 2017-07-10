@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/dark">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Added Faces: "
+        android:padding="12dp"
+        android:textSize="32sp"
+        android:textColor="@color/white"/>
 
     <GridView
         android:id="@+id/grid_view"
@@ -11,7 +21,6 @@
         android:numColumns="2"
         android:verticalSpacing="0dp"
         android:horizontalSpacing="0dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center" />
+        android:stretchMode="columnWidth"/>
 
-</FrameLayout>
+</LinearLayout>
