@@ -75,7 +75,7 @@ public class FaceCropper {
             paint.setFilterBitmap(true);
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            b.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+            b.compress(Bitmap.CompressFormat.JPEG, 100, stream);
             byte[] bytes = stream.toByteArray();
 
             int targetWidth = b.getWidth();

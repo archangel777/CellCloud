@@ -22,7 +22,7 @@ public class ImageComparator {
     private InetAddress address;
     //public static final int min_matches = 70;
     //public static final int min_dist = 30;
-    public static final int DUPLICATE_LIMIT = 40000;
+    public static final int DUPLICATE_LIMIT = 80000;
 
     private Bitmap b1;
     private Mat hist1;
