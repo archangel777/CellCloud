@@ -24,7 +24,7 @@ public class FaceSaver implements Runnable {
     @Override
     public void run() {
         try {
-            bitmap = FaceCropper.crop(bitmap, 180, 180);
+            bitmap = FaceCropper.crop(bitmap, 200, 200);
             String path = Environment.getExternalStorageDirectory().toString() + "/faces";
             int counter = 0;
             File dir = new File(path);
@@ -38,7 +38,7 @@ public class FaceSaver implements Runnable {
             fOut.flush(); // Not really required
             fOut.close(); // do not forget to close the stream
 
-            MediaStore.Images.Media.insertImage(c.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
+            //MediaStore.Images.Media.insertImage(c.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }

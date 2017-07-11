@@ -149,8 +149,9 @@ public class MainScreen extends AppCompatActivity {
                 @Override
                 public void run() {
                     canCloseFragment = true;
+                    resultsFragment.hideProgress();
                 }
-            }, 3000);
+            }, 5000);
         }
     }
 

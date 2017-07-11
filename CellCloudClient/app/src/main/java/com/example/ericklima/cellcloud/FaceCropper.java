@@ -49,7 +49,7 @@ public class FaceCropper {
 
             @Override
             protected Bitmap doInBackground(Void... voids) {
-                return crop(drawable.getBitmap(), 180, 180);
+                return crop(drawable.getBitmap(), 200, 200);
             }
 
             @Override
